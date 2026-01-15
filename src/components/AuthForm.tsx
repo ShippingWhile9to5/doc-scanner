@@ -12,7 +12,7 @@ interface AuthFormProps {
 }
 
 export default function AuthForm({ onSuccess }: AuthFormProps) {
-    const [isLogin, setIsLogin] = useState(true);
+    const [isLogin, setIsLogin] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -60,7 +60,7 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
                 <CardContent className="p-8">
                     <div className="text-center mb-8">
                         <h2 className="text-2xl font-bold text-gray-900">
-                            {isLogin ? "Welcome Back" : "Create Account"}
+                            {isLogin ? "Welcome Back" : "Get Started"}
                         </h2>
                         <p className="text-sm text-gray-500 mt-2">
                             {isLogin
