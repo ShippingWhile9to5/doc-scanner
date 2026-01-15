@@ -95,6 +95,22 @@ export default function ScannerUI() {
     const handleFiles = (files: FileList | null) => {
         if (!files) return;
 
+        // Calculate total new images (current + new)
+        const newCount = images.length + files.length;
+
+        // Define limits
+        const limit = usageInfo.isPro ? 5 : 2;
+
+        if (newCount > limit) {
+            if (!usageInfo.isPro) {
+                setStatusMessage({ type: 'error', text: "Free plan limited to 2 pages per scan. Upgrade for more!" });
+                setShowUpgradeModal(true);
+            } else {
+                setStatusMessage({ type: 'error', text: "Maximum 5 pages allowed per scan for performance." });
+            }
+            return;
+        }
+
         Array.from(files).forEach((file) => {
             if (file.type.startsWith("image/")) {
                 const reader = new FileReader();
@@ -106,7 +122,7 @@ export default function ScannerUI() {
                 };
                 reader.readAsDataURL(file);
             } else {
-                console.log("Unsupported file type:", file.type);
+                // Ignore non-image files
             }
         });
     };
@@ -204,7 +220,7 @@ export default function ScannerUI() {
                     title: "Scanned Document",
                 });
             } catch (err) {
-                console.log("Share failed", err);
+                // Share failed silently
             }
         } else {
             const a = document.createElement("a");
