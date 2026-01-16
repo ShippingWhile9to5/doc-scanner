@@ -108,12 +108,7 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
 
                                     <Button
                                         className="w-full h-14 rounded-xl text-lg font-bold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-xl shadow-purple-200 transition-all hover:scale-[1.02]"
-                                        onClick={() => {
-                                            const link = billingCycle === 'monthly'
-                                                ? "https://buy.stripe.com/test_4gMfZjdBTcnDdnN6d2dQQ00"
-                                                : "https://buy.stripe.com/test_14A9AVapHevL4RheJydQQ01";
-                                            window.open(link, '_blank');
-                                        }}
+                                        onClick={handleSubscribe}
                                     >
                                         Unlock Unlimited Access
                                     </Button>
