@@ -103,8 +103,9 @@ export default function ScannerUI() {
 
         if (newCount > limit) {
             if (!usageInfo.isPro) {
-                setStatusMessage({ type: 'error', text: "Free plan limited to 2 pages per scan. Upgrade for more!" });
-                setShowUpgradeModal(true);
+                setStatusMessage({ type: 'error', text: "Free plan limited to 2 documents per scan. Upgrade for more!" });
+                // Wait for user to read the message before popping up the modal
+                setTimeout(() => setShowUpgradeModal(true), 1500);
             } else {
                 setStatusMessage({ type: 'error', text: "Maximum 5 pages allowed per scan for performance." });
             }
