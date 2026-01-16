@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Squeezer - Premium Document Compressor",
-  description: "Compress and convert your documents to PDF instantly. Privacy-first: your files never leave your device.",
+  title: "DocSqueezer - Free Online PDF Scanner & Compressor",
+  description: "Scan documents and compress PDF files instantly. The best privacy-focused mobile scanner for iPhone and Android. No ads, no cloud uploads.",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon-192.png",
