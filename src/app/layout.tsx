@@ -101,10 +101,21 @@ export default function RootLayout({
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    // Check for updates every time the page is loaded
+                    registration.update();
                     console.log('ServiceWorker registration successful');
                   }, function(err) {
                     console.log('ServiceWorker registration failed: ', err);
                   });
+                });
+
+                // Reload the page when a new service worker takes over
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                  if (!refreshing) {
+                    window.location.reload();
+                    refreshing = true;
+                  }
                 });
               }
             `,
