@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     siteName: "DocSqueezer",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.png?v=1",
         width: 1200,
         height: 630,
         alt: "DocSqueezer - Free PDF Compression & Conversion",
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     site: "https://docsqueezer.com",
     title: "DocSqueezer - Free PDF Compression & Conversion",
     description: "Compress PDFs and images instantly. Fast, secure, and private. Free tier available.",
-    images: ["/og-image.png"],
+    images: ["/og-image.png?v=1"],
   },
 };
 
