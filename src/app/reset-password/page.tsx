@@ -15,7 +15,7 @@ export default function ResetPasswordPage() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
-    const { updatePassword, stopRecovery } = useAuth();
+    const { updatePassword, stopRecovery, signOut } = useAuth();
     const supabase = createClient();
 
     const handleSubmit = async (e: React.FormEvent) => {
