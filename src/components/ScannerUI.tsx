@@ -247,7 +247,7 @@ export default function ScannerUI() {
                 >
                     DocSqueezer
                 </motion.h1>
-                <p className="text-blue-100 opacity-80">Premium Document Scanner & Compressor</p>
+                <p className="text-blue-100 opacity-80">The Ultimate Document Scanner & Compressor</p>
             </div>
 
             {/* Usage Badge */}
