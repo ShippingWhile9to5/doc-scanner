@@ -24,8 +24,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://docsqueezer.com"),
-  title: "DocSqueezer - Free PDF Compression & Conversion",
-  description: "Compress PDFs and images instantly. Fast, secure, and private. Free tier available with Pro plans starting at £5/month.",
+  title: "DocSqueezer - Privacy-First PDF Scanning & Compression",
+  description: "Compress PDFs and images instantly. Fast, secure, and private document processing starting at £5/month.",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon-192.png",
@@ -34,15 +34,15 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://docsqueezer.com",
-    title: "DocSqueezer - Free PDF Compression & Conversion",
-    description: "Compress PDFs and images instantly. Fast, secure, and private. Free tier available with Pro plans starting at £5/month.",
+    title: "DocSqueezer - Privacy-First PDF Scanning & Compression",
+    description: "Compress PDFs and images instantly. Fast, secure, and private document processing.",
     siteName: "DocSqueezer",
     images: [
       {
-        url: "/og-image.png?v=1",
+        url: "/og-image.png?v=2",
         width: 1200,
         height: 630,
-        alt: "DocSqueezer - Free PDF Compression & Conversion",
+        alt: "DocSqueezer - Privacy-First PDF Scanning & Compression",
       },
     ],
     locale: "en_GB",
@@ -50,9 +50,9 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     site: "https://docsqueezer.com",
-    title: "DocSqueezer - Free PDF Compression & Conversion",
-    description: "Compress PDFs and images instantly. Fast, secure, and private. Free tier available.",
-    images: ["/og-image.png?v=1"],
+    title: "DocSqueezer - Privacy-First PDF Scanning & Compression",
+    description: "Compress PDFs and images instantly. Fast, secure, and private document processing.",
+    images: ["/og-image.png?v=2"],
   },
 };
 
