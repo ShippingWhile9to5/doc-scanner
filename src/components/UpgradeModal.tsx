@@ -14,6 +14,12 @@ interface UpgradeModalProps {
 export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
     const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'yearly'>('yearly');
 
+    const handleSubscribe = () => {
+        const monthlyLink = "https://buy.stripe.com/14AdRa9Dg5kW6Ga5el";
+        const yearlyLink = "https://buy.stripe.com/3cIfZieXA28KfcG8qx";
+        window.location.href = billingCycle === 'monthly' ? monthlyLink : yearlyLink;
+    };
+
     const price = billingCycle === 'monthly' ? "£6.99" : "£35.99";
     const period = billingCycle === 'monthly' ? "/ month" : "/ year";
     return (
