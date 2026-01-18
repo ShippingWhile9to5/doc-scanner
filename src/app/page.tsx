@@ -72,7 +72,7 @@ export default function Home() {
             <h1 className="text-5xl md:text-7xl font-black tracking-tight bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent italic">
               DocSqueezer
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100 opacity-80 font-medium">The Ultimate Privacy-First Document Scanner</p>
+            <p className="text-xl md:text-2xl text-blue-100 opacity-80 font-medium">The Privacy-First Document Scanner</p>
           </div>
 
           <AuthForm />
