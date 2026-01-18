@@ -24,34 +24,35 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://docsqueezer.com"),
-  title: "DocSqueezer - Free Online PDF Scanner & Compressor",
-  description: "Scan documents and compress PDF files instantly. The best privacy-focused mobile scanner for iPhone and Android. No ads, no cloud uploads.",
+  title: "DocSqueezer - Free PDF Compression & Conversion",
+  description: "Compress PDFs and images instantly. Fast, secure, and private. Free tier available with Pro plans starting at £5/month.",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon-192.png",
     apple: "/icon-192.png",
   },
   openGraph: {
-    title: "DocSqueezer - Private PDF Scanner",
-    description: "Instant document scanning & compression on your device. Privacy-first, no cloud storage.",
+    type: "website",
     url: "https://docsqueezer.com",
+    title: "DocSqueezer - Free PDF Compression & Conversion",
+    description: "Compress PDFs and images instantly. Fast, secure, and private. Free tier available with Pro plans starting at £5/month.",
     siteName: "DocSqueezer",
     images: [
       {
-        url: "/icon-512.png",
-        width: 512,
-        height: 512,
-        alt: "DocSqueezer Logo",
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "DocSqueezer - Free PDF Compression & Conversion",
       },
     ],
     locale: "en_GB",
-    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "DocSqueezer - Private PDF Scanner",
-    description: "Scan & compress PDFs instantly. Files never leave your device.",
-    images: ["/icon-512.png"],
+    site: "https://docsqueezer.com",
+    title: "DocSqueezer - Free PDF Compression & Conversion",
+    description: "Compress PDFs and images instantly. Fast, secure, and private. Free tier available.",
+    images: ["/og-image.png"],
   },
 };
 
