@@ -9,12 +9,13 @@ import MarketingSections from "@/components/MarketingSections";
 import Footer from "@/components/Footer";
 
 export default function Home() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, isRecovering } = useAuth();
 
-  if (loading) {
+  if (loading || isRecovering) {
     return (
-      <main className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-white animate-spin" />
+      <main className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-white space-y-4">
+        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+        <p className="text-sm text-slate-400">Securing your session...</p>
       </main>
     );
   }

@@ -14,6 +14,7 @@ interface AuthContextType {
     signOut: () => Promise<void>;
     resetPassword: (email: string) => Promise<{ error: Error | null }>;
     updatePassword: (password: string) => Promise<{ error: Error | null }>;
+    isRecovering: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isRecovering, setIsRecovering] = useState(false);
     const router = useRouter();
 
     // Create client once using useMemo
@@ -51,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setLoading(false);
 
                 if (event === 'PASSWORD_RECOVERY') {
+                    setIsRecovering(true);
                     router.push('/reset-password');
                 }
             }
@@ -86,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, resetPassword, updatePassword }}>
+        <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, resetPassword, updatePassword, isRecovering }}>
             {children}
         </AuthContext.Provider>
     );
