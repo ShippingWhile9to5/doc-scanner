@@ -23,7 +23,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://docsqueezer.com"),
+  metadataBase: new URL("https://www.docsqueezer.com"),
   title: "DocSqueezer - Privacy-First PDF Scanning & Compression",
   description: "Compress PDFs and images instantly. Fast, secure, and private document processing starting at £5/month.",
   manifest: "/manifest.json",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
-    url: "https://docsqueezer.com",
+    url: "https://www.docsqueezer.com",
     title: "DocSqueezer - Privacy-First PDF Scanning & Compression",
     description: "Compress PDFs and images instantly. Fast, secure, and private document processing.",
     siteName: "DocSqueezer",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    site: "https://docsqueezer.com",
+    site: "https://www.docsqueezer.com",
     title: "DocSqueezer - Privacy-First PDF Scanning & Compression",
     description: "Compress PDFs and images instantly. Fast, secure, and private document processing.",
     images: ["/og-image.png?v=2"],
