@@ -6,6 +6,7 @@ import AuthForm from "@/components/AuthForm";
 import { Loader2, LogOut, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MarketingSections from "@/components/MarketingSections";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   const { user, loading, signOut } = useAuth();
