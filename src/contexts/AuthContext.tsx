@@ -15,6 +15,7 @@ interface AuthContextType {
     resetPassword: (email: string) => Promise<{ error: Error | null }>;
     updatePassword: (password: string) => Promise<{ error: Error | null }>;
     isRecovering: boolean;
+    stopRecovery: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -88,8 +89,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: error as Error | null };
     };
 
+    const stopRecovery = () => {
+        setIsRecovering(false);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, resetPassword, updatePassword, isRecovering }}>
+        <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut, resetPassword, updatePassword, isRecovering, stopRecovery }}>
             {children}
         </AuthContext.Provider>
     );

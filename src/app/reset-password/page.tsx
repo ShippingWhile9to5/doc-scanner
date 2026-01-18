@@ -15,7 +15,7 @@ export default function ResetPasswordPage() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
-    const { updatePassword } = useAuth();
+    const { updatePassword, stopRecovery } = useAuth();
     const supabase = createClient();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -30,7 +30,7 @@ export default function ResetPasswordPage() {
             // 2. If no session, try to verify token from URL
             if (!session) {
                 const url = new URL(window.location.href);
-                const token = url.searchParams.get("token");
+                const token = url.searchParams.get("token") || url.searchParams.get("token_hash");
                 const type = url.searchParams.get("type") || "recovery";
 
                 if (token && type === "recovery") {
@@ -94,7 +94,10 @@ export default function ResetPasswordPage() {
                                     </p>
                                 </div>
                                 <Link href="/" className="block">
-                                    <Button className="w-full h-14 rounded-2xl text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+                                    <Button
+                                        onClick={stopRecovery}
+                                        className="w-full h-14 rounded-2xl text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                                    >
                                         Back to Login
                                     </Button>
                                 </Link>
