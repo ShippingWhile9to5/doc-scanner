@@ -95,7 +95,10 @@ export default function ResetPasswordPage() {
                                 </div>
                                 <Link href="/" className="block">
                                     <Button
-                                        onClick={stopRecovery}
+                                        onClick={() => {
+                                            signOut();
+                                            stopRecovery();
+                                        }}
                                         className="w-full h-14 rounded-2xl text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
                                     >
                                         Back to Login
