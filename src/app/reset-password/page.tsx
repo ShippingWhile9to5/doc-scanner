@@ -21,19 +21,38 @@ export default function ResetPasswordPage() {
 
     useEffect(() => {
         const handleToken = async () => {
-            // Check for manual token in URL (Manual Fix path)
+            // 1. If we already have a session, we are likely good to go
+            const { data: { session: existingSession } } = await supabase.auth.getSession();
+            if (existingSession) {
+                setVerifying(false);
+                return;
+            }
+
+            // 2. Check for manual token in URL
             const url = new URL(window.location.href);
-            const token = url.searchParams.get("token") || url.hash.replace("#", "").split("&").find(p => p.startsWith("access_token="))?.split("=")[1];
+            const token = url.searchParams.get("token");
             const type = url.searchParams.get("type") || "recovery";
 
             if (token && type === "recovery") {
-                const { error } = await supabase.auth.verifyOtp({
-                    token_hash: token,
-                    type: "recovery",
-                });
-                if (error) {
-                    setError("Invalid or expired reset link. Please request a new one.");
+                // Determine if it's a 6-digit code or a long hash
+                const isHash = token.length > 10;
+
+                const { error: verifyError } = await supabase.auth.verifyOtp(
+                    isHash
+                        ? { token_hash: token, type: 'recovery' }
+                        : { email: '', token, type: 'recovery' } // Note: recovery OTP usually isn't verified like this, 
+                    // but Supabase supports it. Actually recovery links 
+                    // from dashboard are hashes.
+                );
+
+                if (verifyError) {
+                    console.error("Verification error:", verifyError);
+                    setError("Invalid or expired reset link. Please try requesting a new one from the login page.");
                 }
+            } else {
+                // If there's no token and no session, we shouldn't be here
+                // But we'll let it pass and let handleSubmit catch the missing session
+                // to avoid blocking users who might be in a weird state.
             }
             setVerifying(false);
         };
@@ -46,6 +65,12 @@ export default function ResetPasswordPage() {
         setLoading(true);
         setError(null);
 
+        if (!session) {
+            setError("Session not found. Please try clicking the reset link again or request a new one.");
+            setLoading(false);
+            return;
+        }
+
         try {
             const { error } = await updatePassword(password);
             if (error) {
@@ -54,7 +79,7 @@ export default function ResetPasswordPage() {
                 setSuccess(true);
             }
         } catch (err) {
-            setError("An unexpected error occurred");
+            setError("An unexpected error occurred. Please try again.");
         } finally {
             setLoading(false);
         }
