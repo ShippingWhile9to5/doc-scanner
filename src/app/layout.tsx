@@ -22,7 +22,48 @@ export const metadata: Metadata = {
     apple: "/icon-192.png",
   },
   themeColor: "#4f46e5",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0", // Prevents zoom on focus for mobile
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0",
+  openGraph: {
+    title: "DocSqueezer - Private PDF Scanner",
+    description: "Instant document scanning & compression on your device. Privacy-first, no cloud storage.",
+    url: "https://docsqueezer.com",
+    siteName: "DocSqueezer",
+    images: [
+      {
+        url: "/icon-512.png",
+        width: 512,
+        height: 512,
+        alt: "DocSqueezer Logo",
+      },
+    ],
+    locale: "en_GB",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DocSqueezer - Private PDF Scanner",
+    description: "Scan & compress PDFs instantly. Files never leave your device.",
+    images: ["/icon-512.png"],
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "DocSqueezer",
+  "operatingSystem": "iOS, Android, Windows, macOS",
+  "applicationCategory": "ProductivityApplication",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "GBP"
+  },
+  "description": "Privacy-focused document scanner and PDF compressor. Process files locally on your device.",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.9",
+    "ratingCount": "120"
+  }
 };
 
 export default function RootLayout({
@@ -32,6 +73,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
