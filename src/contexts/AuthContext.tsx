@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setLoading(false);
 
                 if (event === 'PASSWORD_RECOVERY') {
-                    router.push('/update-password');
+                    router.push('/reset-password');
                 }
             }
         );
