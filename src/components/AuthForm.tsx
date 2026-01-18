@@ -12,14 +12,14 @@ interface AuthFormProps {
 }
 
 export default function AuthForm({ onSuccess }: AuthFormProps) {
-    const [isLogin, setIsLogin] = useState(false);
+    const [view, setView] = useState<'login' | 'signup' | 'forgot'>('signup');
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
 
-    const { signIn, signUp } = useAuth();
+    const { signIn, signUp, resetPassword } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,19 +28,26 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
         setMessage(null);
 
         try {
-            if (isLogin) {
+            if (view === 'login') {
                 const { error } = await signIn(email, password);
                 if (error) {
                     setError(error.message);
                 } else {
                     onSuccess?.();
                 }
-            } else {
+            } else if (view === 'signup') {
                 const { error } = await signUp(email, password);
                 if (error) {
                     setError(error.message);
                 } else {
                     setMessage("Check your email for a confirmation link!");
+                }
+            } else {
+                const { error } = await resetPassword(email);
+                if (error) {
+                    setError(error.message);
+                } else {
+                    setMessage("Password reset link sent to your email!");
                 }
             }
         } catch (err) {
@@ -60,12 +67,14 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
                 <CardContent className="p-8">
                     <div className="text-center mb-8">
                         <h2 className="text-2xl font-bold text-gray-900">
-                            {isLogin ? "Welcome Back" : "Get Started"}
+                            {view === 'login' ? "Welcome Back" : view === 'signup' ? "Get Started" : "Reset Password"}
                         </h2>
                         <p className="text-sm text-gray-500 mt-2">
-                            {isLogin
+                            {view === 'login'
                                 ? "Sign in to continue compressing"
-                                : "Get 2 free conversions to start"}
+                                : view === 'signup'
+                                    ? "Get 2 free conversions to start"
+                                    : "Enter your email to receive a reset link"}
                         </p>
                     </div>
 
@@ -82,18 +91,32 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
                             />
                         </div>
 
-                        <div className="relative">
-                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input
-                                type="password"
-                                placeholder="Password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                minLength={8}
-                                className="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                            />
-                        </div>
+                        {view !== 'forgot' && (
+                            <div className="relative">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input
+                                    type="password"
+                                    placeholder="Password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    minLength={8}
+                                    className="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                />
+                            </div>
+                        )}
+
+                        {view === 'login' && (
+                            <div className="text-right">
+                                <button
+                                    type="button"
+                                    onClick={() => setView('forgot')}
+                                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                                >
+                                    Forgot Password?
+                                </button>
+                            </div>
+                        )}
 
                         {error && (
                             <motion.div
@@ -124,26 +147,28 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
                                 <Loader2 className="w-5 h-5 animate-spin" />
                             ) : (
                                 <>
-                                    {isLogin ? "Sign In" : "Create Account"}
+                                    {view === 'login' ? "Sign In" : view === 'signup' ? "Create Account" : "Send Reset Link"}
                                     <ArrowRight className="w-5 h-5 ml-2" />
                                 </>
                             )}
                         </Button>
                     </form>
 
-                    <div className="mt-6 text-center">
+                    <div className="mt-6 text-center space-y-2">
                         <button
                             type="button"
                             onClick={() => {
-                                setIsLogin(!isLogin);
+                                setView(view === 'login' ? 'signup' : 'login');
                                 setError(null);
                                 setMessage(null);
                             }}
-                            className="text-sm text-gray-500 hover:text-blue-600 transition-colors"
+                            className="text-sm text-gray-500 hover:text-blue-600 transition-colors block w-full"
                         >
-                            {isLogin
+                            {view === 'login'
                                 ? "Don't have an account? Sign up"
-                                : "Already have an account? Sign in"}
+                                : view === 'signup'
+                                    ? "Already have an account? Sign in"
+                                    : "Back to Sign In"}
                         </button>
                     </div>
                 </CardContent>
