@@ -136,17 +136,20 @@ export default function ScannerUI() {
         if (images.length === 0) return;
         if (!user) return;
 
-        // Check if user can convert
-        // Check if user can convert
-        if (!usageInfo.canConvert) {
-            setShowUpgradeModal(true);
-            return;
-        }
-
         setIsProcessing(true);
         setGeneratedPdf(null);
 
         try {
+            // Real-time check to prevent cross-device limit bypass
+            const freshUsage = await checkCanConvert(user.id);
+            setUsageInfo(freshUsage);
+
+            if (!freshUsage.canConvert) {
+                setIsProcessing(false);
+                setShowUpgradeModal(true);
+                return;
+            }
+
             const pdf = new jsPDF({
                 orientation: "portrait",
                 unit: "mm",
