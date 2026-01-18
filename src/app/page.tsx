@@ -1,6 +1,8 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import ScannerUI from "@/components/ScannerUI";
 import AuthForm from "@/components/AuthForm";
 import { Loader2, LogOut, Sparkles } from "lucide-react";
@@ -10,6 +12,14 @@ import Footer from "@/components/Footer";
 
 export default function Home() {
   const { user, loading, signOut, isRecovering } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Fail-safe: if the user lands on Home with a recovery hash, kick them to reset page
+    if (window.location.hash.includes("type=recovery") || window.location.search.includes("type=recovery")) {
+      router.push("/reset-password" + window.location.hash + window.location.search);
+    }
+  }, [router]);
 
   if (loading || isRecovering) {
     return (

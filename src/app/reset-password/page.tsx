@@ -6,15 +6,40 @@ import { Lock, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
+import { createClient } from "@/lib/supabase";
 import Link from "next/link";
 
 export default function ResetPasswordPage() {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const [verifying, setVerifying] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
     const { updatePassword, session } = useAuth();
+    const supabase = createClient();
+
+    useEffect(() => {
+        const handleToken = async () => {
+            // Check for manual token in URL (Manual Fix path)
+            const url = new URL(window.location.href);
+            const token = url.searchParams.get("token") || url.hash.replace("#", "").split("&").find(p => p.startsWith("access_token="))?.split("=")[1];
+            const type = url.searchParams.get("type") || "recovery";
+
+            if (token && type === "recovery") {
+                const { error } = await supabase.auth.verifyOtp({
+                    token_hash: token,
+                    type: "recovery",
+                });
+                if (error) {
+                    setError("Invalid or expired reset link. Please request a new one.");
+                }
+            }
+            setVerifying(false);
+        };
+
+        handleToken();
+    }, [supabase]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -34,6 +59,14 @@ export default function ResetPasswordPage() {
             setLoading(false);
         }
     };
+
+    if (verifying) {
+        return (
+            <main className="min-h-screen flex items-center justify-center bg-slate-950">
+                <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+            </main>
+        );
+    }
 
     return (
         <main className="min-h-screen flex items-center justify-center bg-slate-950 p-4">
