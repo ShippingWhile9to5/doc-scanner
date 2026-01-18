@@ -2,6 +2,15 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import type { Viewport } from 'next'
+
+export const viewport: Viewport = {
+  themeColor: "#4f46e5",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,6 +23,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://docsqueezer.com"),
   title: "DocSqueezer - Free Online PDF Scanner & Compressor",
   description: "Scan documents and compress PDF files instantly. The best privacy-focused mobile scanner for iPhone and Android. No ads, no cloud uploads.",
   manifest: "/manifest.json",
@@ -21,8 +31,6 @@ export const metadata: Metadata = {
     icon: "/icon-192.png",
     apple: "/icon-192.png",
   },
-  themeColor: "#4f46e5",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0",
   openGraph: {
     title: "DocSqueezer - Private PDF Scanner",
     description: "Instant document scanning & compression on your device. Privacy-first, no cloud storage.",
