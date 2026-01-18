@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase";
 import { User, Session, SupabaseClient } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
     user: User | null;
@@ -21,6 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     // Create client once using useMemo
     const supabase = useMemo(() => createClient(), []);
@@ -43,15 +45,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            (_event, session) => {
+            (event, session) => {
                 setSession(session);
                 setUser(session?.user ?? null);
                 setLoading(false);
+
+                if (event === 'PASSWORD_RECOVERY') {
+                    router.push('/update-password');
+                }
             }
         );
 
         return () => subscription.unsubscribe();
-    }, [supabase]);
+    }, [supabase, router]);
 
     const signUp = async (email: string, password: string) => {
         const { error } = await supabase.auth.signUp({ email, password });
