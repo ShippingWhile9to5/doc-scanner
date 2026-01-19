@@ -48,7 +48,6 @@ export default function ScannerUI() {
 
     const { user } = useAuth();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const cameraInputRef = useRef<HTMLInputElement>(null);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     // Payment Success Handling
@@ -114,21 +113,20 @@ export default function ScannerUI() {
 
         Array.from(files).forEach((file) => {
             if (file.type.startsWith("image/")) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    setImages((prev) => [...prev, {
-                        data: e.target?.result as string,
-                        name: file.name
-                    }]);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                // Ignore non-image files
+                const url = URL.createObjectURL(file);
+                setImages((prev) => [...prev, {
+                    data: url,
+                    name: file.name
+                }]);
             }
         });
     };
 
     const removeImage = (index: number) => {
+        const img = images[index];
+        if (img.data.startsWith('blob:')) {
+            URL.revokeObjectURL(img.data);
+        }
         setImages((prev) => prev.filter((_, i) => i !== index));
     };
 
@@ -289,13 +287,7 @@ export default function ScannerUI() {
                                 e.stopPropagation();
                                 fileInputRef.current?.click();
                             }}>
-                                <FileText className="w-4 h-4 mr-2" /> Files
-                            </Button>
-                            <Button variant="outline" size="sm" className="rounded-xl border-blue-200" onClick={(e) => {
-                                e.stopPropagation();
-                                cameraInputRef.current?.click();
-                            }}>
-                                <Camera className="w-4 h-4 mr-2" /> Camera
+                                <Upload className="w-4 h-4 mr-2" /> Select Images
                             </Button>
                         </div>
                         <input
@@ -303,14 +295,6 @@ export default function ScannerUI() {
                             ref={fileInputRef}
                             className="hidden"
                             multiple
-                            accept="image/*"
-                            onChange={(e) => handleFiles(e.target.files)}
-                        />
-                        <input
-                            type="file"
-                            ref={cameraInputRef}
-                            className="hidden"
-                            capture="environment"
                             accept="image/*"
                             onChange={(e) => handleFiles(e.target.files)}
                         />
