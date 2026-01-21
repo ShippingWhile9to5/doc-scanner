@@ -285,8 +285,8 @@ export default function ScannerUI() {
                         }`}>
                         <Sparkles className="w-4 h-4" />
                         {remainingFree > 0
-                            ? `${remainingFree} free conversion${remainingFree === 1 ? '' : 's'} remaining`
-                            : 'No free conversions left — Upgrade to Pro!'
+                            ? `${remainingFree} free squeeze${remainingFree === 1 ? '' : 's'} available this month`
+                            : 'No free squeezes left — Upgrade to Pro!'
                         }
                     </div>
                 </motion.div>

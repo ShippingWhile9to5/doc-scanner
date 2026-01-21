@@ -5,6 +5,7 @@ export interface UserProfile {
     email: string;
     usage_count: number;
     is_pro: boolean;
+    last_reset_at: string;
     created_at: string;
 }
 
@@ -45,6 +46,7 @@ async function createProfile(userId: string): Promise<UserProfile | null> {
                 email: userData.user?.email || "",
                 usage_count: 0,
                 is_pro: false,
+                last_reset_at: new Date().toISOString(),
             })
             .select()
             .single();
@@ -99,20 +101,47 @@ export async function checkCanConvert(userId: string): Promise<{ canConvert: boo
         const profile = await getProfile(userId);
 
         if (!profile) {
-            // If no profile, allow conversion (we'll create profile on first use)
             return { canConvert: true, usageCount: 0, isPro: false };
         }
 
-        const canConvert = profile.is_pro || profile.usage_count < 2;
+        if (profile.is_pro) {
+            return { canConvert: true, usageCount: profile.usage_count, isPro: true };
+        }
+
+        // Monthly Reset Logic
+        const now = new Date();
+        const lastReset = profile.last_reset_at ? new Date(profile.last_reset_at) : new Date(profile.created_at);
+
+        const isNewMonth = now.getUTCMonth() !== lastReset.getUTCMonth() ||
+            now.getUTCFullYear() !== lastReset.getUTCFullYear();
+
+        let currentUsage = profile.usage_count;
+
+        if (isNewMonth) {
+            // Reset the count in the database
+            const supabase = createClient();
+            const { error: resetError } = await supabase
+                .from("profiles")
+                .update({
+                    usage_count: 0,
+                    last_reset_at: now.toISOString()
+                })
+                .eq("id", userId);
+
+            if (!resetError) {
+                currentUsage = 0;
+            }
+        }
+
+        const canConvert = currentUsage < 2;
 
         return {
             canConvert,
-            usageCount: profile.usage_count,
-            isPro: profile.is_pro,
+            usageCount: currentUsage,
+            isPro: false,
         };
     } catch (err) {
         console.error("Exception in checkCanConvert:", err);
-        // Default to allowing conversion if there's an error
         return { canConvert: true, usageCount: 0, isPro: false };
     }
 }

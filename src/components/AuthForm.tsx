@@ -73,7 +73,7 @@ export default function AuthForm({ onSuccess }: AuthFormProps) {
                             {view === 'login'
                                 ? "Sign in to continue compressing"
                                 : view === 'signup'
-                                    ? "Get 2 free conversions to start"
+                                    ? "Get 2 free squeezes every month"
                                     : "Enter your email to receive a reset link"}
                         </p>
                     </div>
