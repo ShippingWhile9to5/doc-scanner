@@ -19,7 +19,7 @@ const steps = [
     {
         icon: <Upload className="w-6 h-6" />,
         title: "Upload",
-        description: "Select images or snap photos directly with your camera."
+        description: "Upload PDFs or images to compress instantly."
     },
     {
         icon: <Settings2 className="w-6 h-6" />,
@@ -37,7 +37,7 @@ const features = [
     {
         icon: <ShieldCheck className="w-5 h-5 text-green-500" />,
         title: "100% Private",
-        description: "Files are processed on your device. They NEVER leave your phone or laptop."
+        description: "Files are processed on YOUR device. They NEVER leave your phone or laptop."
     },
     {
         icon: <Smartphone className="w-5 h-5 text-blue-500" />,
