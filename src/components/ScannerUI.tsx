@@ -25,10 +25,16 @@ import UpgradeModal from "@/components/UpgradeModal";
 import jsPDF from "jspdf";
 import { useSearchParams, useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
+import { PDFDocument } from 'pdf-lib';
+import { compressPdf } from "@/lib/pdf-utils";
 
-interface SelectedImage {
-    data: string;
+interface SelectedFile {
+    id: string;
+    data: string; // Blob URL or Data URL
     name: string;
+    type: 'image' | 'pdf';
+    originalSize: number;
+    compressedSize?: number;
 }
 
 interface UsageInfo {
@@ -38,11 +44,11 @@ interface UsageInfo {
 }
 
 export default function ScannerUI() {
-    const [images, setImages] = useState<SelectedImage[]>([]);
+    const [files, setFiles] = useState<SelectedFile[]>([]);
     const [isFactFind, setIsFactFind] = useState(false);
     const [quality, setQuality] = useState(60);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [generatedPdf, setGeneratedPdf] = useState<{ blob: Blob; url: string; filename: string } | null>(null);
+    const [generatedPdf, setGeneratedPdf] = useState<{ blob: Blob; url: string; filename: string; originalSize: number; compressedSize: number } | null>(null);
     const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [usageInfo, setUsageInfo] = useState<UsageInfo>({ usageCount: 0, isPro: false, canConvert: true });
 
@@ -91,47 +97,45 @@ export default function ScannerUI() {
         }
     }, [user?.id]);
 
-    const handleFiles = (files: FileList | null) => {
-        if (!files) return;
+    const handleFiles = (incomingFiles: FileList | null) => {
+        if (!incomingFiles) return;
 
-        // Calculate total new images (current + new)
-        const newCount = images.length + files.length;
-
-        // Define limits
-        const limit = usageInfo.isPro ? 5 : 2;
-
-        if (newCount > limit) {
-            if (!usageInfo.isPro) {
-                setStatusMessage({ type: 'error', text: "Free plan limited to 2 documents per scan. Upgrade for more!" });
-                // Wait for user to read the message before popping up the modal
-                setTimeout(() => setShowUpgradeModal(true), 1500);
-            } else {
-                setStatusMessage({ type: 'error', text: "Maximum 5 pages allowed per scan for performance." });
-            }
+        const limit = usageInfo.isPro ? 10 : 2; // Keep a reasonable limit for performance
+        if (files.length + incomingFiles.length > limit) {
+            setStatusMessage({ type: 'error', text: `Maximum ${limit} files allowed per scan.` });
+            if (!usageInfo.isPro) setTimeout(() => setShowUpgradeModal(true), 1500);
             return;
         }
 
-        Array.from(files).forEach((file) => {
-            if (file.type.startsWith("image/")) {
-                const url = URL.createObjectURL(file);
-                setImages((prev) => [...prev, {
-                    data: url,
-                    name: file.name
-                }]);
+        Array.from(incomingFiles).forEach((file) => {
+            if (file.size > 20 * 1024 * 1024) {
+                setStatusMessage({ type: 'error', text: `${file.name} is too large (>20MB).` });
+                return;
             }
+
+            const url = URL.createObjectURL(file);
+            const type = file.type === 'application/pdf' ? 'pdf' : 'image';
+
+            setFiles((prev) => [...prev, {
+                id: Math.random().toString(36).substr(2, 9),
+                data: url,
+                name: file.name,
+                type: type,
+                originalSize: file.size
+            }]);
         });
     };
 
-    const removeImage = (index: number) => {
-        const img = images[index];
-        if (img.data.startsWith('blob:')) {
-            URL.revokeObjectURL(img.data);
+    const removeFile = (index: number) => {
+        const file = files[index];
+        if (file.data.startsWith('blob:')) {
+            URL.revokeObjectURL(file.data);
         }
-        setImages((prev) => prev.filter((_, i) => i !== index));
+        setFiles((prev) => prev.filter((_, i) => i !== index));
     };
 
-    const generatePDF = async () => {
-        if (images.length === 0) return;
+    const processFiles = async () => {
+        if (files.length === 0) return;
         if (!user) return;
 
         setIsProcessing(true);
@@ -148,43 +152,59 @@ export default function ScannerUI() {
                 return;
             }
 
-            const pdf = new jsPDF({
-                orientation: "portrait",
-                unit: "mm",
-                format: "a4",
-            });
+            // Create a target PDF that will contain everything
+            const mergedPdf = await PDFDocument.create();
 
-            const pageWidth = 210;
-            const pageHeight = 297;
-            const margin = 10;
-            const maxWidth = pageWidth - margin * 2;
-            const maxHeight = pageHeight - margin * 2;
+            for (const fileItem of files) {
+                if (fileItem.type === 'image') {
+                    // Process Image -> PDF Page
+                    let imgData = fileItem.data;
+                    if (isFactFind) {
+                        imgData = await applyScanEffect(imgData);
+                    }
 
-            for (let i = 0; i < images.length; i++) {
-                if (i > 0) pdf.addPage();
+                    const compressed = await compressImage(imgData, quality / 100);
+                    const imgBytes = await fetch(compressed).then(res => res.arrayBuffer());
 
-                let imgData = images[i].data;
-                if (isFactFind) {
-                    imgData = await applyScanEffect(imgData);
+                    // Embed image in the new PDF page
+                    const page = mergedPdf.addPage([595.28, 841.89]); // A4 in points
+                    const embeddedImg = await mergedPdf.embedJpg(imgBytes);
+
+                    const { width, height } = embeddedImg.scaleToFit(595.28 - 40, 841.89 - 40);
+                    page.drawImage(embeddedImg, {
+                        x: (595.28 - width) / 2,
+                        y: (841.89 - height) / 2,
+                        width,
+                        height,
+                    });
+                } else {
+                    // Process PDF -> Merge & potentially compress
+                    const pdfBytes = await fetch(fileItem.data).then(res => res.arrayBuffer());
+                    const srcDoc = await PDFDocument.load(pdfBytes);
+                    const copiedPages = await mergedPdf.copyPages(srcDoc, srcDoc.getPageIndices());
+                    copiedPages.forEach((page) => mergedPdf.addPage(page));
                 }
-
-                const compressed = await compressImage(imgData, quality / 100);
-                const img = await loadImage(compressed);
-
-                const scale = Math.min(maxWidth / img.width, maxHeight / img.height);
-                const width = img.width * scale;
-                const height = img.height * scale;
-                const x = (pageWidth - width) / 2;
-                const y = (pageHeight - height) / 2;
-
-                pdf.addImage(compressed, "JPEG", x, y, width, height);
             }
 
-            const filename = `scan-${new Date().getTime()}.pdf`;
-            const blob = pdf.output("blob");
+            // Final Squeeze
+            const finalPdfBytes = await mergedPdf.save({ useObjectStreams: true });
+            // Use .buffer as ArrayBuffer to fix lint
+            const squeezedBytes = await compressPdf(finalPdfBytes.buffer as ArrayBuffer, quality);
+
+            const filename = `squeezer-${new Date().getTime()}.pdf`;
+            const blob = new Blob([squeezedBytes as any], { type: 'application/pdf' });
             const url = URL.createObjectURL(blob);
 
-            setGeneratedPdf({ blob, url, filename });
+            const totalOriginalSize = files.reduce((sum, f) => sum + f.originalSize, 0);
+            const compressedSize = blob.size;
+
+            setGeneratedPdf({
+                blob,
+                url,
+                filename,
+                originalSize: totalOriginalSize,
+                compressedSize: compressedSize
+            });
 
             // Increment usage count
             const newCount = await incrementUsage(user.id);
@@ -193,7 +213,11 @@ export default function ScannerUI() {
                 setUsageInfo({ ...usageInfo, usageCount: newCount, canConvert: newCanConvert });
             }
 
-            setStatusMessage({ type: 'success', text: `PDF generated (${(blob.size / 1024).toFixed(0)} KB)` });
+            const reduction = Math.round((1 - (compressedSize / totalOriginalSize)) * 100);
+            setStatusMessage({
+                type: 'success',
+                text: `Squeezed by ${reduction}%! (${(compressedSize / 1024).toFixed(0)} KB)`
+            });
 
             // Auto-download the PDF
             const a = document.createElement('a');
@@ -245,7 +269,7 @@ export default function ScannerUI() {
                 >
                     DocSqueezer
                 </motion.h1>
-                <p className="text-blue-100 opacity-80">Premium Document Scanner & Compressor</p>
+                <p className="text-blue-100 opacity-80">Privacy-First PDF Scanning & Compression</p>
             </div>
 
             {/* Usage Badge */}
@@ -279,15 +303,15 @@ export default function ScannerUI() {
                             <Upload className="w-8 h-8" />
                         </div>
                         <div className="text-center">
-                            <h3 className="text-xl font-semibold text-gray-800">Add Documents</h3>
-                            <p className="text-sm text-gray-500">Tap to upload or take a photo</p>
+                            <h3 className="text-xl font-semibold text-gray-800">Upload</h3>
+                            <p className="text-sm text-gray-500">Upload PDFs or images to compress instantly.</p>
                         </div>
                         <div className="flex gap-3 pt-2">
                             <Button variant="outline" size="sm" className="rounded-xl border-blue-200" onClick={(e) => {
                                 e.stopPropagation();
                                 fileInputRef.current?.click();
                             }}>
-                                <Upload className="w-4 h-4 mr-2" /> Select Images
+                                <Upload className="w-4 h-4 mr-2" /> Select Files
                             </Button>
                         </div>
                         <input
@@ -295,34 +319,40 @@ export default function ScannerUI() {
                             ref={fileInputRef}
                             className="hidden"
                             multiple
-                            accept="image/*"
+                            accept="image/*,.pdf"
                             onChange={(e) => handleFiles(e.target.files)}
                         />
                     </div>
 
-                    {/* Preview & Controls Area */}
                     <AnimatePresence>
-                        {images.length > 0 && (
+                        {files.length > 0 && (
                             <motion.div
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: "auto", opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
                                 className="p-8 space-y-8"
                             >
-                                {/* Image Grid */}
+                                {/* File Grid */}
                                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
-                                    {images.map((img, idx) => (
+                                    {files.map((file, idx) => (
                                         <motion.div
-                                            key={idx}
+                                            key={file.id}
                                             layout
                                             initial={{ scale: 0.8, opacity: 0 }}
                                             animate={{ scale: 1, opacity: 1 }}
-                                            className="relative aspect-square rounded-2xl overflow-hidden shadow-md group"
+                                            className="relative aspect-square rounded-2xl overflow-hidden shadow-md group border border-gray-100"
                                         >
-                                            <img src={img.data} className="w-full h-full object-cover" alt="Preview" />
+                                            {file.type === 'pdf' ? (
+                                                <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-red-500 p-2 text-center">
+                                                    <FileText className="w-8 h-8 mb-1" />
+                                                    <span className="text-[10px] text-gray-600 line-clamp-2 px-1">{file.name}</span>
+                                                </div>
+                                            ) : (
+                                                <img src={file.data} className="w-full h-full object-cover" alt="Preview" />
+                                            )}
                                             <button
-                                                onClick={() => removeImage(idx)}
-                                                className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={() => removeFile(idx)}
+                                                className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -388,15 +418,23 @@ export default function ScannerUI() {
                                             ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'
                                             : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white'
                                             }`}
-                                        onClick={usageInfo.canConvert ? generatePDF : () => setShowUpgradeModal(true)}
+                                        onClick={usageInfo.canConvert ? processFiles : () => setShowUpgradeModal(true)}
                                         disabled={isProcessing}
                                     >
-                                        {isProcessing ? "Optimizing..." : usageInfo.canConvert ? "Create Compressed PDF" : "Upgrade to Continue"}
+                                        {isProcessing ? "Squeezing..." : usageInfo.canConvert ? "Create Compressed PDF" : "Upgrade to Continue"}
                                     </Button>
 
-                                    <Button variant="ghost" className="text-gray-400 hover:text-red-500" onClick={() => setImages([])}>
-                                        <RotateCcw className="w-4 h-4 mr-2" /> Clear All
-                                    </Button>
+                                    <button
+                                        className="w-full text-xs text-gray-400 hover:text-red-500 flex items-center justify-center gap-1"
+                                        onClick={() => {
+                                            files.forEach(f => {
+                                                if (f.data.startsWith('blob:')) URL.revokeObjectURL(f.data);
+                                            });
+                                            setFiles([]);
+                                        }}
+                                    >
+                                        <RotateCcw className="w-3 h-3" /> Clear All
+                                    </button>
                                 </div>
                             </motion.div>
                         )}
@@ -432,7 +470,9 @@ export default function ScannerUI() {
             </Card>
 
             <div className="text-center space-y-8">
-                <p className="text-xs text-white/40">Privacy First: Your files never leave your device.</p>
+                <h3 className="text-white font-black italic text-xl">DocSqueezer</h3>
+                <p className="text-slate-500 text-xs tracking-widest uppercase">Privacy-First PDF & Image Engine</p>
+                <p className="text-xs text-white/40">Files are processed on YOUR device. They NEVER leave your phone or laptop.</p>
 
                 {/* Small Pro Reminder for Authenticated Users */}
                 {!usageInfo.isPro && (

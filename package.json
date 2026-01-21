@@ -25,6 +25,7 @@
     "jspdf": "^2.5.1",
     "lucide-react": "^0.475.0",
     "next": "16.1.1",
+    "pdf-lib": "^1.17.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "tailwind-merge": "^2.2.2"
