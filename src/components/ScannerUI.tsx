@@ -26,7 +26,7 @@ import jsPDF from "jspdf";
 import { useSearchParams, useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
 import { PDFDocument } from 'pdf-lib';
-import { compressPdfAdvanced } from "@/lib/pdf-utils";
+import { compressPdfAdvanced, compressPdfBasic } from "@/lib/pdf-utils";
 
 interface SelectedFile {
     id: string;
@@ -46,6 +46,7 @@ interface UsageInfo {
 export default function ScannerUI() {
     const [files, setFiles] = useState<SelectedFile[]>([]);
     const [isFactFind, setIsFactFind] = useState(false);
+    const [compressionMode, setCompressionMode] = useState<'standard' | 'advanced'>('advanced');
     const [quality, setQuality] = useState(60);
     const formatSize = (bytes: number) => {
         if (bytes === 0) return '0 Bytes';
@@ -55,7 +56,7 @@ export default function ScannerUI() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
     const [isProcessing, setIsProcessing] = useState(false);
-    const [generatedPdf, setGeneratedPdf] = useState<{ blob: Blob; url: string; filename: string; originalSize: number; compressedSize: number } | null>(null);
+    const [generatedPdf, setGeneratedPdf] = useState<{ blob: Blob; url: string; filename: string; originalSize: number; compressedSize: number; compressionMode: 'standard' | 'advanced' } | null>(null);
     const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [usageInfo, setUsageInfo] = useState<UsageInfo>({ usageCount: 0, isPro: false, canConvert: true });
 
@@ -193,9 +194,11 @@ export default function ScannerUI() {
                 }
             }
 
-            // Final Squeeze (using advanced compression)
+            // Final Squeeze - choose compression method based on mode
             const finalPdfBytes = await mergedPdf.save({ useObjectStreams: true });
-            const squeezedBytes = await compressPdfAdvanced(finalPdfBytes.buffer as ArrayBuffer, quality);
+            const squeezedBytes = compressionMode === 'advanced'
+                ? await compressPdfAdvanced(finalPdfBytes.buffer as ArrayBuffer, quality)
+                : await compressPdfBasic(finalPdfBytes.buffer as ArrayBuffer);
 
             const filename = `squeezer-${new Date().getTime()}.pdf`;
             const blob = new Blob([squeezedBytes as any], { type: 'application/pdf' });
@@ -209,7 +212,8 @@ export default function ScannerUI() {
                 url,
                 filename,
                 originalSize: totalOriginalSize,
-                compressedSize: compressedSize
+                compressedSize: compressedSize,
+                compressionMode: compressionMode
             });
 
             // Increment usage count
@@ -387,6 +391,61 @@ export default function ScannerUI() {
                                             </div>
                                         </div>
 
+                                        {/* Compression Mode Selector */}
+                                        <div className="flex items-start space-x-4">
+                                            <div className="pt-1">
+                                                <div className="w-6 h-6 flex items-center justify-center">
+                                                    <Zap className="w-4 h-4 text-purple-500" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3 w-full">
+                                                <label className="text-sm font-bold flex items-center gap-2">
+                                                    Compression Mode
+                                                </label>
+
+                                                {/* Radio Options */}
+                                                <div className="space-y-2">
+                                                    <label className="flex items-start space-x-3 cursor-pointer group">
+                                                        <input
+                                                            type="radio"
+                                                            name="compressionMode"
+                                                            value="advanced"
+                                                            checked={compressionMode === 'advanced'}
+                                                            onChange={(e) => setCompressionMode(e.target.value as 'standard' | 'advanced')}
+                                                            className="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500"
+                                                        />
+                                                        <div>
+                                                            <div className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">
+                                                                Advanced (Maximum compression)
+                                                            </div>
+                                                            <div className="text-xs text-gray-500">
+                                                                60-80% reduction • Text becomes images
+                                                            </div>
+                                                        </div>
+                                                    </label>
+
+                                                    <label className="flex items-start space-x-3 cursor-pointer group">
+                                                        <input
+                                                            type="radio"
+                                                            name="compressionMode"
+                                                            value="standard"
+                                                            checked={compressionMode === 'standard'}
+                                                            onChange={(e) => setCompressionMode(e.target.value as 'standard' | 'advanced')}
+                                                            className="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500"
+                                                        />
+                                                        <div>
+                                                            <div className="text-sm font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">
+                                                                Standard (Preserve text)
+                                                            </div>
+                                                            <div className="text-xs text-gray-500">
+                                                                5-15% reduction • Text stays selectable
+                                                            </div>
+                                                        </div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div className="flex items-start space-x-4">
                                             <div className="pt-1">
                                                 <div className="w-6 h-6 flex items-center justify-center">
@@ -459,6 +518,9 @@ export default function ScannerUI() {
                                         <Sparkles className="w-6 h-6" />
                                     </div>
                                     <h3 className="text-xl font-bold text-green-900 leading-tight">Great Squeeze!</h3>
+                                    <div className="text-xs font-semibold text-gray-500 mt-1">
+                                        {generatedPdf.compressionMode === 'advanced' ? '⚡ Advanced Mode' : '📝 Standard Mode'}
+                                    </div>
 
                                     <div className="w-full max-w-sm mx-auto grid grid-cols-3 gap-4 py-6 border-y border-green-200/50 mt-4">
                                         <div className="space-y-1">
