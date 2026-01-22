@@ -26,7 +26,7 @@ import jsPDF from "jspdf";
 import { useSearchParams, useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
 import { PDFDocument } from 'pdf-lib';
-import { compressPdf } from "@/lib/pdf-utils";
+import { compressPdfAdvanced } from "@/lib/pdf-utils";
 
 interface SelectedFile {
     id: string;
@@ -193,10 +193,9 @@ export default function ScannerUI() {
                 }
             }
 
-            // Final Squeeze
+            // Final Squeeze (using advanced compression)
             const finalPdfBytes = await mergedPdf.save({ useObjectStreams: true });
-            // Use .buffer as ArrayBuffer to fix lint
-            const squeezedBytes = await compressPdf(finalPdfBytes.buffer as ArrayBuffer, quality);
+            const squeezedBytes = await compressPdfAdvanced(finalPdfBytes.buffer as ArrayBuffer, quality);
 
             const filename = `squeezer-${new Date().getTime()}.pdf`;
             const blob = new Blob([squeezedBytes as any], { type: 'application/pdf' });
