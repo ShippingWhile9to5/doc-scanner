@@ -457,7 +457,7 @@ export default function ScannerUI() {
                                                     <label className="text-sm font-bold flex items-center gap-2">
                                                         Compression Quality
                                                     </label>
-                                                    <span className="text-xs font-mono bg-blue-100 text-blue-600 px-2 py-1 rounded-full">{quality}%</span>
+                                                    <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent px-3 py-1">{quality}%</span>
                                                 </div>
                                                 <div className="pt-2">
                                                     <Slider
@@ -466,7 +466,7 @@ export default function ScannerUI() {
                                                         min={10}
                                                         max={100}
                                                         step={1}
-                                                        className="py-2"
+                                                        className="cursor-pointer"
                                                     />
                                                 </div>
                                                 <p className="text-[10px] text-gray-400">Lower quality = smaller file size. Recommended: 60%.</p>
