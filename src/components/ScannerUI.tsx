@@ -47,6 +47,13 @@ export default function ScannerUI() {
     const [files, setFiles] = useState<SelectedFile[]>([]);
     const [isFactFind, setIsFactFind] = useState(false);
     const [quality, setQuality] = useState(60);
+    const formatSize = (bytes: number) => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    };
     const [isProcessing, setIsProcessing] = useState(false);
     const [generatedPdf, setGeneratedPdf] = useState<{ blob: Blob; url: string; filename: string; originalSize: number; compressedSize: number } | null>(null);
     const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -448,11 +455,26 @@ export default function ScannerUI() {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="p-8 bg-green-50 border-t border-green-100 space-y-4 text-center"
                             >
-                                <div className="flex flex-col items-center space-y-2">
-                                    <div className="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center shadow-lg">
-                                        <Download className="w-6 h-6" />
+                                <div className="flex flex-col items-center">
+                                    <div className="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center shadow-lg mb-4">
+                                        <Sparkles className="w-6 h-6" />
                                     </div>
-                                    <h3 className="text-lg font-bold text-green-900">PDF Ready!</h3>
+                                    <h3 className="text-xl font-bold text-green-900 leading-tight">Great Squeeze!</h3>
+
+                                    <div className="w-full max-w-sm mx-auto grid grid-cols-3 gap-4 py-6 border-y border-green-200/50 mt-4">
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] uppercase tracking-wider text-green-600 font-bold">Original</p>
+                                            <p className="text-sm font-semibold text-green-800">{formatSize(generatedPdf.originalSize)}</p>
+                                        </div>
+                                        <div className="space-y-1 border-x border-green-200/50 px-2">
+                                            <p className="text-[10px] uppercase tracking-wider text-green-600 font-bold">New Size</p>
+                                            <p className="text-sm font-bold text-green-900">{formatSize(generatedPdf.compressedSize)}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] uppercase tracking-wider text-green-600 font-bold">Reduction</p>
+                                            <p className="text-sm font-bold text-blue-600">-{Math.round((1 - (generatedPdf.compressedSize / generatedPdf.originalSize)) * 100)}%</p>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="flex gap-3">
@@ -494,6 +516,6 @@ export default function ScannerUI() {
                 isOpen={showUpgradeModal}
                 onClose={() => setShowUpgradeModal(false)}
             />
-        </div>
+        </div >
     );
 }
