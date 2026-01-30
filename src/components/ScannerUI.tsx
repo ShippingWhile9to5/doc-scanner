@@ -554,7 +554,7 @@ export default function ScannerUI() {
 
             <div className="text-center space-y-8">
                 <h3 className="text-white font-black italic text-xl">DocSqueezer</h3>
-                <p className="text-slate-500 text-xs tracking-widest uppercase">Privacy-First PDF & Image Engine</p>
+                <p className="text-white/80 text-xs tracking-widest uppercase">Privacy-First PDF & Image Engine</p>
                 <p className="text-xs text-white/90">Files are processed on YOUR device. They NEVER leave your phone or laptop.</p>
 
                 {/* Small Pro Reminder for Authenticated Users */}
