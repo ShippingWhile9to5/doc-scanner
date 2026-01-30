@@ -125,7 +125,7 @@ export default function MarketingSections() {
                                 </div>
                                 <div className="space-y-1">
                                     <h3 className="font-bold text-white">{feature.title}</h3>
-                                    <p className="text-blue-100/90 text-sm">{feature.description}</p>
+                                    <p className="text-white text-sm">{feature.description}</p>
                                 </div>
                             </CardContent>
                         </Card>
