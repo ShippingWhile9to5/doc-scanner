@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import ScannerUI from "@/components/ScannerUI";
 import AuthForm from "@/components/AuthForm";
 import { Loader2, LogOut, Sparkles } from "lucide-react";
@@ -64,7 +64,13 @@ export default function Home() {
               Sign Out
             </Button>
           </div>
-          <ScannerUI />
+          <Suspense fallback={
+            <div className="w-full max-w-2xl mx-auto flex justify-center items-center py-20">
+              <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+            </div>
+          }>
+            <ScannerUI />
+          </Suspense>
         </div>
       ) : (
         <div className="w-full space-y-12">

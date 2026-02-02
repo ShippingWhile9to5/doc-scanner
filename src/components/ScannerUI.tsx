@@ -144,10 +144,14 @@ export default function ScannerUI() {
 
     const processFiles = async () => {
         if (files.length === 0) return;
-        if (!user) return;
+        if (!user) {
+            setStatusMessage({ type: 'error', text: 'Please sign in to continue.' });
+            return;
+        }
 
         setIsProcessing(true);
         setGeneratedPdf(null);
+        setStatusMessage(null);
 
         try {
             // Real-time check to prevent cross-device limit bypass
@@ -237,8 +241,26 @@ export default function ScannerUI() {
             a.click();
             document.body.removeChild(a);
         } catch (error) {
-            console.error(error);
-            setStatusMessage({ type: 'error', text: 'Failed to generate PDF. Please try again.' });
+            console.error('PDF Processing Error:', error);
+
+            // Provide specific error messages based on error type
+            let errorMessage = 'Failed to generate PDF. Please try again.';
+
+            if (error instanceof Error) {
+                if (error.message.includes('canvas')) {
+                    errorMessage = 'Browser compatibility issue. Please try using a different browser or update your current one.';
+                } else if (error.message.includes('worker')) {
+                    errorMessage = 'PDF processing failed. Please refresh the page and try again.';
+                } else if (error.message.includes('fetch') || error.message.includes('network')) {
+                    errorMessage = 'Network error. Please check your connection and try again.';
+                } else if (error.message.includes('memory') || error.message.includes('allocation')) {
+                    errorMessage = 'File too large. Try reducing the quality or using fewer files.';
+                } else {
+                    errorMessage = `Error: ${error.message}`;
+                }
+            }
+
+            setStatusMessage({ type: 'error', text: errorMessage });
         } finally {
             setIsProcessing(false);
         }
@@ -301,6 +323,30 @@ export default function ScannerUI() {
                     </div>
                 </motion.div>
             )}
+
+            {/* Status Message */}
+            <AnimatePresence>
+                {statusMessage && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="flex justify-center"
+                    >
+                        <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl text-sm font-medium shadow-lg ${statusMessage.type === 'success'
+                                ? 'bg-green-500 text-white'
+                                : 'bg-red-500 text-white'
+                            }`}>
+                            {statusMessage.type === 'success' ? (
+                                <Sparkles className="w-4 h-4" />
+                            ) : (
+                                <FileText className="w-4 h-4" />
+                            )}
+                            {statusMessage.text}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <Card className="border-none shadow-2xl bg-white/95 backdrop-blur-sm overflow-hidden rounded-3xl">
                 <CardContent className="p-0">

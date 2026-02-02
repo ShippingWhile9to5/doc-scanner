@@ -101,7 +101,8 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                  // Use timestamp to force update the service worker script itself
+                  navigator.serviceWorker.register('/sw.js?v=' + new Date().getTime()).then(function(registration) {
                     // Check for updates every time the page is loaded
                     registration.update();
                     console.log('ServiceWorker registration successful');
