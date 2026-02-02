@@ -100,24 +100,18 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
+                // EMERGENCY KILL SWITCH: Unregister all service workers to fix ChunkLoadErrors
                 window.addEventListener('load', function() {
-                  // Use timestamp to force update the service worker script itself
-                  navigator.serviceWorker.register('/sw.js?v=' + new Date().getTime()).then(function(registration) {
-                    // Check for updates every time the page is loaded
-                    registration.update();
-                    console.log('ServiceWorker registration successful');
-                  }, function(err) {
-                    console.log('ServiceWorker registration failed: ', err);
+                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for(let registration of registrations) {
+                      console.log('Unregistering stuck SW:', registration);
+                      registration.unregister();
+                    }
+                    if (registrations.length > 0) {
+                      console.log('Reloading to clear SW control...');
+                      window.location.reload();
+                    }
                   });
-                });
-
-                // Reload the page when a new service worker takes over
-                let refreshing = false;
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                  if (!refreshing) {
-                    window.location.reload();
-                    refreshing = true;
-                  }
                 });
               }
             `,
