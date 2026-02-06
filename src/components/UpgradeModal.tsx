@@ -15,12 +15,12 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
     const [billingCycle, setBillingCycle] = React.useState<'monthly' | 'yearly'>('yearly');
 
     const handleSubscribe = () => {
-        const monthlyLink = "https://buy.stripe.com/14AdRa9Dg5kW6Ga5el";
-        const yearlyLink = "https://buy.stripe.com/3cIfZieXA28KfcG8qx";
+        const monthlyLink = "https://buy.stripe.com/3cI7sM5n0bJk0hM9uB2go03";
+        const yearlyLink = "https://buy.stripe.com/4gM5kEg1EaFg0hM5el2go04";
         window.location.href = billingCycle === 'monthly' ? monthlyLink : yearlyLink;
     };
 
-    const price = billingCycle === 'monthly' ? "£6.99" : "£35.99";
+    const price = billingCycle === 'monthly' ? "£3.99" : "£19.99";
     const period = billingCycle === 'monthly' ? "/ month" : "/ year";
     return (
         <AnimatePresence>
@@ -98,7 +98,7 @@ export default function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
                                                     animate={{ opacity: 1, scale: 1 }}
                                                     className="absolute -top-3 -right-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md border border-white"
                                                 >
-                                                    SAVE 57%
+                                                    SAVE 58%
                                                 </motion.span>
                                             </button>
                                         </div>
